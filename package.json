@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 4001",
+    "dev": "next dev --port 4004",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@kognitos/lattice": "file:kognitos-lattice-1.18.0.tgz",
     "@anthropic-ai/sdk": "^0.39.0",
     "@supabase/supabase-js": "^2.49.4",
     "apache-arrow": "^21.1.0",

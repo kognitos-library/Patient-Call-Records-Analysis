@@ -11,12 +11,7 @@ if (!url || !anonKey) {
 export const supabase = url && anonKey ? createClient(url, anonKey) : null;
 export const supabaseAdmin = url && serviceKey ? createClient(url, serviceKey) : null;
 
-/**
- * Project-specific table names. Rename this prefix to match your automation
- * (e.g. "invoice_processing_sessions") so multiple apps can share one
- * Supabase project without collisions.
- */
 export const TABLES = {
-  sessions: "chat_sessions",
-  messages: "chat_messages",
+  sessions: "patient_call_sessions",
+  messages: "patient_call_messages",
 } as const;

@@ -9,17 +9,11 @@ export const maxDuration = 60;
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-/**
- * Registered tools for Claude. Customize these for your domain:
- * - Update descriptions to use domain language
- * - Add domain-specific tools that call your data-fetching functions
- * - Remove tools that don't apply to your automation
- */
 const TOOLS: Anthropic.Tool[] = [
   {
-    name: "list_runs",
+    name: "list_analyses",
     description:
-      "List recent automation runs with their statuses and dates. Returns up to 50 runs.",
+      "List recent patient call record analyses with patient IDs, statuses, ER alerts, and parsed report metadata. Returns up to 50 analyses.",
     input_schema: {
       type: "object" as const,
       properties: {},
@@ -27,21 +21,21 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
-    name: "get_run",
+    name: "get_analysis",
     description:
-      "Get full details of a specific run by its ID, including all outputs and status information.",
+      "Get the full patient report for a specific analysis by its ID. Includes the complete markdown report with call history, timeline, medications, and follow-ups.",
     input_schema: {
       type: "object" as const,
       properties: {
-        run_id: { type: "string", description: "The run ID to retrieve" },
+        analysis_id: { type: "string", description: "The analysis ID to retrieve" },
       },
-      required: ["run_id"],
+      required: ["analysis_id"],
     },
   },
   {
     name: "get_automation",
     description:
-      "Get details about the automation, including its code, connections, and description.",
+      "Get details about the Patient Call Records Analysis automation, including how it works and what connections it uses.",
     input_schema: {
       type: "object" as const,
       properties: {},
@@ -50,30 +44,18 @@ const TOOLS: Anthropic.Tool[] = [
   },
 ];
 
-/**
- * Execute a tool call. Customize the handlers for your domain:
- * - list_runs: call your domain-specific data-fetching function
- * - get_run: call your domain-specific detail-fetching function
- * - Add cases for any new tools you define above
- */
 async function executeTool(name: string, input: Record<string, unknown>): Promise<string> {
   switch (name) {
-    case "list_runs": {
-      const res = await req(
-        `/organizations/${ORG_ID}/workspaces/${WORKSPACE_ID}/automations/${AUTOMATION_ID}/runs?pageSize=50`
-      );
-      if (!res.ok) return `Error: ${res.status}`;
-      const data = await res.json();
-      return JSON.stringify(data.runs ?? [], null, 2);
-    }
-    case "get_run": {
-      const runId = input.run_id as string;
-      const res = await req(
-        `/organizations/${ORG_ID}/workspaces/${WORKSPACE_ID}/automations/${AUTOMATION_ID}/runs/${runId}`
-      );
-      if (!res.ok) return `Error: ${res.status}`;
-      const data = await res.json();
+    case "list_analyses": {
+      const { fetchAllAnalyses } = await import("@/lib/analyses");
+      const data = await fetchAllAnalyses();
       return JSON.stringify(data, null, 2);
+    }
+    case "get_analysis": {
+      const analysisId = input.analysis_id as string;
+      const { fetchAnalysisDetail } = await import("@/lib/analyses");
+      const detail = await fetchAnalysisDetail(analysisId);
+      return JSON.stringify(detail, null, 2);
     }
     case "get_automation": {
       const res = await req(
@@ -123,7 +105,7 @@ export async function POST(request: Request) {
   if (supabaseAdmin) {
     await supabaseAdmin
       .from(TABLES.messages)
-      .insert({ session_id: sessionId, role: "user", content: message });
+      .insert({ id: crypto.randomUUID(), session_id: sessionId, role: "user", content: message });
   }
 
   const systemPrompt = await buildSystemPrompt();
@@ -220,7 +202,7 @@ export async function POST(request: Request) {
         if (supabaseAdmin) {
           await supabaseAdmin
             .from(TABLES.messages)
-            .insert({ session_id: sessionId, role: "assistant", content: fullAssistantResponse || "" });
+            .insert({ id: crypto.randomUUID(), session_id: sessionId, role: "assistant", content: fullAssistantResponse || "" });
         }
 
         if (supabaseAdmin) {

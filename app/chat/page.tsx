@@ -11,14 +11,11 @@ import {
 } from "@kognitos/lattice";
 import { useChatContext } from "@/lib/chat/chat-context";
 
-/**
- * Replace these with domain-specific questions that users are likely to ask.
- */
 const SUGGESTIONS = [
-  "How many runs completed successfully today?",
-  "Show me all runs that need review",
-  "What does this automation do?",
-  "Are there any failed runs I should look at?",
+  "Which patients have ER alerts?",
+  "Show me the latest analysis for PAT001",
+  "How many patient analyses have been run this month?",
+  "What medications is PAT023 on?",
 ];
 
 export default function ChatPage() {
@@ -65,7 +62,7 @@ export default function ChatPage() {
       <div className="p-4 border-b border-border shrink-0">
         <Title level="h3">Chat</Title>
         <Text level="xSmall" color="muted">
-          Ask questions about your data, runs, and automation status
+          Ask questions about patient call records, analyses, and reports
         </Text>
       </div>
 
@@ -82,8 +79,8 @@ export default function ChatPage() {
               <Icon type="MessageSquare" size="xl" className="text-muted-foreground mb-3 mx-auto" />
               <Title level="h3">Ask a question</Title>
               <Text color="muted" className="mt-1">
-                I can help you look up data, check processing status, and
-                answer questions about the automation.
+                I can look up patient call records, check analysis status, and
+                help you understand patient reports.
               </Text>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-lg">
